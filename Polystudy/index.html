@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PolyStudy test</title>
+</head>
+<body>
+  <h1>PolyStudy connection test</h1>
+
+  <button onclick="showGlossary()">Load glossary</button>
+  <button onclick="saveScore(95)">Save test score</button>
+
+  <ul id="list"></ul>
+  <p id="status"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+
+    //connecting to the db - as is
+    const supabaseClient = supabase.createClient(
+      "https://ozqompzquetevyanjqqf.supabase.co",
+      "sb_publishable_7_9o_2hJ5kiGF7nRlr7rBw_bzf5u2XX"
+    );
+
+    // read function
+    async function showGlossary() {
+      const { data, error } = await supabaseClient
+        .from("glossary") //table
+        .select("term_en, term_translated") //columns
+        .eq("language", "French"); //specification (extras)
+
+      if (error) {
+        document.getElementById("status").textContent = "Error: " + error.message;
+        return;
+      }
+      document.getElementById("list").innerHTML = data
+        .map(row => `<li>${row.term_en} = ${row.term_translated}</li>`)
+        .join("");
+      document.getElementById("status").textContent = data.length + " term(s) loaded";
+    }
+
+    //write function
+    async function saveScore(score) {
+      const { error } = await supabaseClient
+        .from("quiz_results") //table
+        .insert({ score }); //column
+      document.getElementById("status").textContent =
+        error ? "Error: " + error.message : "Score saved!";
+    }
+    
+  </script>
+</body>
+</html>
